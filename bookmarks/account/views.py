@@ -4,7 +4,7 @@ from django.shortcuts import render
 from .forms import LoginForm 
 
 # Create your views here.
-def user_name(request):
+def user_login(request):
     if request.method == 'POST':
         form = loginForm(request.POST)
         if form.is_valid():
@@ -20,6 +20,6 @@ def user_name(request):
                 return HttpResponse('Invalid login')
     else:
         form = LoginForm()
-        
-    return render(request, 'account/login.html', {'from': form})
+
+    return render(request, 'account/login.html', {'form': form})
         
