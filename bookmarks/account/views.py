@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 from .forms import ( LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm )
 from .models import Contact, Profile
+from actions.models import Action
 from actions.utils import create_action
 from django.contrib import messages
 
@@ -47,7 +48,14 @@ def register(request):
 
 @login_required
 def dashboard(request):
-    return render( request, 'account/dashboard.html', {'section': 'dashboard'} )
+    # Display all actions by default
+    actions = Action.objects.exclude(user=request.user)
+    following_ids = request.user.following.values_list( 'id', flat=True )
+    if following_ids:
+        # If user is following others, retrieve only their actions
+        actions = actions.filter(user_id__in=following_ids)
+        actions = actions.select_related( 'user', 'user__profile' ).prefetch_related('target')[:10]
+    return render( request, 'account/dashboard.html', {'section': 'dashboard', 'actions': actions} )
 
 @login_required
 def edit(request):
